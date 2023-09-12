@@ -1,0 +1,682 @@
+[
+    {
+        "id": "dc25f4bc59a58834",
+        "type": "mqtt in",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "topic": "alarma/esp/node1",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "f04da1c05e3ac9ae",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 90,
+        "y": 960,
+        "wires": [
+            [
+                "df8f8378014026a6"
+            ]
+        ]
+    },
+    {
+        "id": "b1d5807ac3e557a4",
+        "type": "debug",
+        "z": "1389b30a80aa2f5b",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 730,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "858778590bc9986b",
+        "type": "sqlite",
+        "z": "1389b30a80aa2f5b",
+        "mydb": "09a5fdcf6782ae1d",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "test.sqlite",
+        "x": 420,
+        "y": 1260,
+        "wires": [
+            [
+                "6f357f44e4947e67"
+            ]
+        ]
+    },
+    {
+        "id": "9f8545a318fb9d55",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "data.format",
+        "func": "var fechaHora = new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'medium' });\nvar temperatura = msg.payload.temperatura;\nvar mq135 = msg.payload.mq135;\nvar mq9 = msg.payload.mq9;\nvar mq2 = msg.payload.mq2;\nvar temp = msg.payload.temp;\nvar hum = msg.payload.hum;\n\n\n\n// Construir la sentencia INSERT\nvar sqlStatement = `INSERT INTO mediciones (fecha_hora, temperatura, mq135, mq9, mq2, temp, hum) \nVALUES ('${fechaHora}', ${temperatura}, ${mq135}, ${mq9}, ${mq2}, ${temp}, ${hum});`;\n\nmsg.topic = sqlStatement;\n// msg.payload = sqlStatement;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 1040,
+        "wires": [
+            [
+                "19d09d736843b6c0"
+            ]
+        ]
+    },
+    {
+        "id": "71103048e957f95b",
+        "type": "inject",
+        "z": "1389b30a80aa2f5b",
+        "name": "create.db",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "CREATE TABLE mediciones (   fecha_hora DATETIME,   temperatura FLOAT,   mq135 INTEGER,   mq9 INTEGER, mq2 INTEGER, temp FLOAT, hum FLOAT);",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 1260,
+        "wires": [
+            [
+                "858778590bc9986b"
+            ]
+        ]
+    },
+    {
+        "id": "6f357f44e4947e67",
+        "type": "debug",
+        "z": "1389b30a80aa2f5b",
+        "name": "debug 2",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 1260,
+        "wires": []
+    },
+    {
+        "id": "fd0e54d714239b50",
+        "type": "json",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 310,
+        "y": 1020,
+        "wires": [
+            [
+                "9f8545a318fb9d55"
+            ]
+        ]
+    },
+    {
+        "id": "19d09d736843b6c0",
+        "type": "sqlite",
+        "z": "1389b30a80aa2f5b",
+        "mydb": "09a5fdcf6782ae1d",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "save.mediciones",
+        "x": 710,
+        "y": 1160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "414fe24bbb6f17ae",
+        "type": "inject",
+        "z": "1389b30a80aa2f5b",
+        "name": "delete",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "DROP TABLE IF EXISTS mediciones;",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 1340,
+        "wires": [
+            [
+                "858778590bc9986b"
+            ]
+        ]
+    },
+    {
+        "id": "b5183f39cc174015",
+        "type": "telegram receiver",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "bot": "385da835f68afe43",
+        "saveDataDir": "",
+        "filterCommands": false,
+        "x": 230,
+        "y": 140,
+        "wires": [
+            [
+                "b1d5807ac3e557a4",
+                "b2e287f9292a60c9"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "df8f8378014026a6",
+        "type": "json",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 310,
+        "y": 880,
+        "wires": [
+            [
+                "c7765f0fef49ec48",
+                "632fb979c217cc8b",
+                "d582e9274480881e",
+                "a7629f32682747fc",
+                "4db16adff339a377",
+                "b2e287f9292a60c9",
+                "3d77f86461b64c52",
+                "698388dac3a466f6",
+                "7df7639af9f338ee"
+            ]
+        ]
+    },
+    {
+        "id": "c7765f0fef49ec48",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "data.format",
+        "func": "var fechaHora = new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'medium' });\nvar temperatura_actual = msg.payload.temperatura;\nvar mq135 = msg.payload.mq135;\nvar mq9 = msg.payload.mq9;\nvar mq2 = msg.payload.mq2;\nvar temp = msg.payload.temp;\nvar hum = msg.payload.hum;\n\nvar temperatura_anterior = 0.0;\n\nif (temp >= 30 ) {\n    msg.payload = {\n        \"chatId\": -908119332,\n        \"type\": \"message\",\n        \"content\": \"temperatura del aire en aumento\" + \", \" + \"la temperatura actual es:  \" + \" \" + temperatura_actual\n    };\n}\n/*if (temperatura_actual > temperatura_anterior ) {\n    msg.payload = {\n        \"chatId\": -908119332,\n        \"type\": \"message\",\n        \"content\": \"temperatura en aumento\" + \" \" + temperatura_actual\n    };\n}\nif (temperatura_actual < temperatura_anterior) {\n    msg.payload = {\n        \"chatId\": -908119332,\n        \"type\": \"message\",\n        \"content\": \"temperatura dismuniyendo\" + \" \" + temperatura_actual\n    };\n} else {\n    msg.payload = {\n        \"chatId\": -908119332,\n        \"type\": \"message\",\n        \"content\": \"temperatura igual a la anterior\" + \" \" + temperatura_actual\n    };\n}\ntemperatura_anterior = temperatura_actual; \n*/\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 880,
+        "wires": [
+            [
+                "b3b94c96b48108b3"
+            ]
+        ]
+    },
+    {
+        "id": "b3b94c96b48108b3",
+        "type": "debug",
+        "z": "1389b30a80aa2f5b",
+        "name": "debug 7",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "632fb979c217cc8b",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "data.format",
+        "func": "var mq2 = msg.payload.mq2;\n// Crea un nuevo mensaje solo con el valor de temperatura\nvar nuevoMsg = {\n    payload: mq2\n};\n\nreturn nuevoMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 660,
+        "wires": [
+            [
+                "a82bbb30abbe707d"
+            ]
+        ]
+    },
+    {
+        "id": "d582e9274480881e",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "data.format",
+        "func": "var temp = msg.payload.temp;\n// Crea un nuevo mensaje solo con el valor de temperatura\nvar nuevoMsg = {\n    payload: temp\n};\n\nreturn nuevoMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 580,
+        "wires": [
+            [
+                "063852d10b9ae882"
+            ]
+        ]
+    },
+    {
+        "id": "a82bbb30abbe707d",
+        "type": "ui_gauge",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "group": "a101b20e5d1a5aa1",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "MQ2",
+        "label": "units",
+        "format": "{{value}}",
+        "min": "3000",
+        "max": "4000",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "3200",
+        "seg2": "3400",
+        "x": 710,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "063852d10b9ae882",
+        "type": "ui_gauge",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "group": "d58665749c6c3654",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "T. Aire",
+        "label": "ºC",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "80",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "40",
+        "seg2": "41",
+        "x": 710,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "0f5245aa76a0877f",
+        "type": "ui_gauge",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "group": "badd1a5a371bf3f7",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Humedad",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#b30000",
+            "#e6e600",
+            "#33db4f"
+        ],
+        "seg1": "55",
+        "seg2": "80",
+        "x": 720,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "a7629f32682747fc",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "data.format",
+        "func": "var hum = msg.payload.hum;\n// Crea un nuevo mensaje solo con el valor de temperatura\nvar nuevoMsg = {\n    payload: hum\n};\n\nreturn nuevoMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 500,
+        "wires": [
+            [
+                "0f5245aa76a0877f"
+            ]
+        ]
+    },
+    {
+        "id": "6b76c0af45806965",
+        "type": "telegram sender",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "bot": "385da835f68afe43",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 790,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f5524e266269afb7",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "function 1",
+        "func": "msg.payload={\n    \"chatId\": -977411819,\n    \"type\":\"message\",\n    \"content\": \"respuesta desde nodered\"\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 220,
+        "wires": [
+            [
+                "6b76c0af45806965"
+            ]
+        ]
+    },
+    {
+        "id": "2c5df113807adc29",
+        "type": "inject",
+        "z": "1389b30a80aa2f5b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 240,
+        "y": 280,
+        "wires": [
+            [
+                "f5524e266269afb7"
+            ]
+        ]
+    },
+    {
+        "id": "4db16adff339a377",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "alerta GLP",
+        "func": "var mq2 = msg.payload.mq2;\nvar temp = msg.payload.temp;\n// Crea un nuevo mensaje solo con el valor de mq2\nvar nuevoMsg = {\n    payload: mq2\n};\n\n// Verifica si mq2 es mayor o igual a 3400\nif (mq2 >= 3300) {\n    // Si la condición se cumple, crea un mensaje de alerta\n    msg.payload = {\n        \"chatId\": -977411819,\n        \"type\": \"message\",\n        \"content\": \"alerta de GLP en la cocina\" + \". Valor: \"+ mq2\n    };\n    return msg;\n}\n// Si la condición no se cumple, no se enviará un mensaje de alerta\nreturn nuevoMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 280,
+        "wires": [
+            [
+                "6b76c0af45806965"
+            ]
+        ]
+    },
+    {
+        "id": "b2e287f9292a60c9",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "reporte",
+        "func": "var mensaje = msg.payload.content.toLowerCase(); // Convertimos a minúsculas para hacer la comparación insensible a mayúsculas\nvar temp = msg.payload.temp;\nvar hum = msg.payload.hum;\nvar mq2 = msg.payload.mq2;\n\n// Crea un nuevo mensaje solo con el valor de mq2\nvar nuevoMsg = {\n    payload: mq2\n};\n\n// Verifica si el mensaje contiene la palabra clave \"reporte\"\nif (mensaje.includes(\"reporte\")) {\n    // Si contiene la palabra clave, crea un mensaje de respuesta\n    msg.payload = {\n        chatId: \"-977411819\", // Utiliza el mismo chatId para responder\n        type: \"message\",\n        content: \"Se ha solicitado un reporte. Aquí está el informe:\\n\" +\n            \"Temperatura: \" + temp + \"°C\\n\" +\n            \"Humedad: \" + hum + \"%\\n\" +\n            \"MQ2: \" + mq2\n    };\n    return msg; // Envía el mensaje de respuesta\n}\n\n// Si el mensaje no contiene la palabra clave \"reporte\", no hacemos nada\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 160,
+        "wires": [
+            [
+                "6b76c0af45806965"
+            ]
+        ]
+    },
+    {
+        "id": "3d77f86461b64c52",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "data.format",
+        "func": "var estado = msg.payload.estado;\n// Crea un nuevo mensaje solo con el valor de temperatura\nvar nuevoMsg = {\n    payload: estado\n};\n\nreturn nuevoMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 760,
+        "wires": [
+            [
+                "1f36948ba28ddfb5"
+            ]
+        ]
+    },
+    {
+        "id": "1f36948ba28ddfb5",
+        "type": "ui_gauge",
+        "z": "1389b30a80aa2f5b",
+        "name": "Estado",
+        "group": "83aa81668915b30a",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Estado",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 720,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "698388dac3a466f6",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "alerta temperatura",
+        "func": "var temp = msg.payload.temp;\n\n// Crea un nuevo mensaje solo con el valor de temp\nvar nuevoMsg = {\n    payload: temp\n};\n\n// Verifica si la temperatura es mayor o igual a 25\nif (temp >= 25) {\n    // Si la condición se cumple, crea un mensaje de alerta\n    msg.payload = {\n        \"chatId\": -977411819,\n        \"type\": \"message\",\n        \"content\": \"Alerta de temperatura en la cocina. Valor: \" + temp + \"ºC\"\n    };\n    return msg;\n}\n\n// Si la condición no se cumple, no se enviará un mensaje de alerta\nreturn nuevoMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 360,
+        "wires": [
+            [
+                "6b76c0af45806965"
+            ]
+        ]
+    },
+    {
+        "id": "7df7639af9f338ee",
+        "type": "function",
+        "z": "1389b30a80aa2f5b",
+        "name": "alerta aspersor",
+        "func": "var estado = msg.payload.estado;\n\n// Crea un nuevo mensaje solo con el valor de temp\nvar nuevoMsg = {\n    payload: estado\n};\n\n// Verifica si la temperatura es mayor o igual a 25\nif (estado == 1) {\n    // Si la condición se cumple, crea un mensaje de alerta\n    msg.payload = {\n        \"chatId\": -977411819,\n        \"type\": \"message\",\n        \"content\": \"ALERTA ASPERSOR EN FUNCIONAMIENTO\"\n    };\n    return msg;\n}\n\n// Si la condición no se cumple, no se enviará un mensaje de alerta\nreturn nuevoMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 440,
+        "wires": [
+            [
+                "6b76c0af45806965"
+            ]
+        ]
+    },
+    {
+        "id": "f04da1c05e3ac9ae",
+        "type": "mqtt-broker",
+        "name": "broker_mosquitto_raspberry",
+        "broker": "192.168.0.33",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "09a5fdcf6782ae1d",
+        "type": "sqlitedb",
+        "db": "vertedero.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "385da835f68afe43",
+        "type": "telegram bot",
+        "botname": "AlertaHome_bot",
+        "usernames": "",
+        "chatids": "",
+        "baseapiurl": "",
+        "updatemode": "polling",
+        "pollinterval": "300",
+        "usesocks": false,
+        "sockshost": "",
+        "socksprotocol": "socks5",
+        "socksport": "6667",
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbotport": "8443",
+        "publicbotport": "8443",
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "a101b20e5d1a5aa1",
+        "type": "ui_group",
+        "name": "MQ2",
+        "tab": "55316baf1bc41eb4",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "d58665749c6c3654",
+        "type": "ui_group",
+        "name": "T. Aire",
+        "tab": "55316baf1bc41eb4",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "badd1a5a371bf3f7",
+        "type": "ui_group",
+        "name": "Humedad",
+        "tab": "55316baf1bc41eb4",
+        "order": 5,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "83aa81668915b30a",
+        "type": "ui_group",
+        "name": "Estado",
+        "tab": "55316baf1bc41eb4",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "55316baf1bc41eb4",
+        "type": "ui_tab",
+        "name": "NODO 1",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]
